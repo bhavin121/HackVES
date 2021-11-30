@@ -3,50 +3,49 @@ package com.example.hackves;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
-import android.Manifest;
-import android.content.Context;
 import android.content.DialogInterface;
-import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.provider.MediaStore;
 import android.widget.MediaController;
 import android.widget.Toast;
 
 import com.example.hackves.databinding.ActivityMainBinding;
 import com.example.hackves.databinding.AddAudioDialogBinding;
+import com.example.hackves.databinding.EffectDialogBinding;
 import com.example.hackves.databinding.ExportVideoDialogBinding;
 import com.github.hiteshsondhi88.libffmpeg.ExecuteBinaryResponseHandler;
 import com.github.hiteshsondhi88.libffmpeg.FFmpeg;
-import com.github.hiteshsondhi88.libffmpeg.FFmpegLoadBinaryResponseHandler;
 import com.github.hiteshsondhi88.libffmpeg.LoadBinaryResponseHandler;
 import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegCommandAlreadyRunningException;
 import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegNotSupportedException;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 import java.io.File;
+import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
 
     public static final String EXTRA_VIDEO_PATH = "path";
 
+    public static final int ADD_AUDIO = 0;
+    public static final int FADE_IN = 1;
+    public static final int FADE_OUT = 2;
+
     ActivityMainBinding binding;
     ExportVideoDialogBinding exportVideoDialogBinding;
     FFmpeg fFmpeg;
     AlertDialog messageDialog, exportOptionsDialog;
-    BottomSheetDialog addMusicDialog;
+    BottomSheetDialog addMusicDialog, addEffectDialog;
     AddAudioDialogBinding addMusicBinding;
+    EffectDialogBinding effectDialogBinding;
     ActivityResultLauncher<String> getAudioLauncher;
     String videoPath, audioPath;
+    MediaPlayer videoPlayer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -71,12 +70,20 @@ public class MainActivity extends AppCompatActivity {
         binding.video.setVideoURI(uri);
         binding.video.setMediaController(controller);
         binding.video.start();
+        videoPlayer = new MediaPlayer();
+        try {
+            videoPlayer.setDataSource(uri.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
 //        binding.pickAudio.setOnClickListener(view -> getAudioLauncher.launch("*/*"));
 
         buildDialogs();
         initFFmpeg();
 
         binding.audio.setOnClickListener(view -> addMusicDialog.show());
+        binding.effect.setOnClickListener(view -> addEffectDialog.show());
     }
 
     private void buildDialogs( ){
@@ -96,10 +103,22 @@ public class MainActivity extends AppCompatActivity {
         addMusicDialog.setContentView(addMusicBinding.getRoot());
         addMusicBinding.add.setOnClickListener(view -> {
             addMusicDialog.dismiss();
-            addAudio();
+            applyEffect(ADD_AUDIO);
         });
         addMusicBinding.cancel.setOnClickListener(view -> addMusicDialog.dismiss());
         addMusicBinding.choose.setOnClickListener(view -> getAudioLauncher.launch("*/*"));
+
+        effectDialogBinding = EffectDialogBinding.inflate(getLayoutInflater());
+        addEffectDialog = new BottomSheetDialog(this);
+        addEffectDialog.setContentView(effectDialogBinding.getRoot());
+        effectDialogBinding.fadeIn.setOnClickListener(view -> {
+            applyEffect(FADE_IN);
+            addEffectDialog.dismiss();
+        });
+        effectDialogBinding.fadeOut.setOnClickListener(view ->{
+            applyEffect(FADE_OUT);
+            addEffectDialog.dismiss();
+        });
     }
 
     private void showUnsupportedError(){
@@ -149,7 +168,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void addAudio(){
+    private void applyEffect(int effect){
         exportOptionsDialog.setButton(DialogInterface.BUTTON_POSITIVE , "Save" , (dialogInterface , i) -> {
             File dir = new File(Environment.getExternalStorageDirectory(),"HackVES");
             if(!dir.exists()){
@@ -158,8 +177,8 @@ public class MainActivity extends AppCompatActivity {
 
             File outputFile = new File(dir, exportVideoDialogBinding.fileName.getText()+""+exportVideoDialogBinding.fileFormat.getSelectedItem());
 
-            String[] command  = {"-i", videoPath, "-i", audioPath, "-c:v", "copy", "-c:a", "aac", "-map", "0:v:0", "-map", "1:a:0", "-shortest", outputFile.getAbsolutePath()};
-            executeFFmpegCommand(command , new CommandResultListener() {
+
+            executeFFmpegCommand(getCommands(effect, outputFile) , new CommandResultListener() {
                 @Override
                 public void onSuccess(String message){
                     binding.video.setVideoURI(Uri.fromFile(outputFile));
@@ -174,5 +193,21 @@ public class MainActivity extends AppCompatActivity {
             });
         });
         exportOptionsDialog.show();
+    }
+
+    public String[] getCommands(int effect, File dest){
+        String[] command = null;
+        switch (effect){
+            case ADD_AUDIO:
+                command  = new String[]{"-i", videoPath, "-i", audioPath, "-c:v", "copy", "-c:a", "aac", "-map", "0:v:0", "-map", "1:a:0", "-shortest", dest.getAbsolutePath()};
+                break;
+            case FADE_IN:
+                command = new String[]{"-y", "-i", videoPath, "-acodec", "copy", "-vf", "fade=t=in:st=0:d=5", dest.getAbsolutePath()};
+                break;
+            case FADE_OUT:
+                command = new String[]{"-y", "-i", videoPath, "-acodec", "copy", "-vf", "fade=t=out:st=" + String.valueOf(binding.video.getDuration() - 5) + ":d=5", dest.getAbsolutePath()};
+                break;
+        }
+        return command;
     }
 }

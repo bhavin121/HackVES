@@ -11,6 +11,10 @@ public class Helper {
     public static final String TYPE_AUDIO = MediaStore.Audio.Media.DATA;
     public static final String TYPE_VIDEO = MediaStore.Video.Media.DATA;
 
+    public static final int ADD_AUDIO = 0;
+    public static final int FADE_IN = 1;
+    public static final int FADE_OUT = 2;
+
     public static String getFilePath(Context context, Uri uri, String contentType){
         String[] columns = {contentType};
         String filePath;

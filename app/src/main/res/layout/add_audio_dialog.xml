@@ -33,10 +33,11 @@
 
     <TextView
         android:id="@+id/fileName"
+        android:paddingHorizontal="20dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="30dp"
-        android:text="No file selected"
+        android:text="No file selected\nClick on the image to choose"
         android:textColor="@color/gray"
         tools:ignore="HardcodedText"
         android:gravity="center_horizontal"/>

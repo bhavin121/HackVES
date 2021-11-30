@@ -5,6 +5,7 @@
       <map>
         <entry key="..\:/Users/bhavi/AndroidStudioProjects/HackVES/app/src/main/res/drawable/circle.xml" value="0.24114583333333334" />
         <entry key="..\:/Users/bhavi/AndroidStudioProjects/HackVES/app/src/main/res/drawable/ic_audio.xml" value="0.24114583333333334" />
+        <entry key="..\:/Users/bhavi/AndroidStudioProjects/HackVES/app/src/main/res/drawable/ic_effect.xml" value="0.24114583333333334" />
         <entry key="..\:/Users/bhavi/AndroidStudioProjects/HackVES/app/src/main/res/drawable/ic_music.xml" value="0.24114583333333334" />
         <entry key="..\:/Users/bhavi/AndroidStudioProjects/HackVES/app/src/main/res/drawable/ic_speed.xml" value="0.24114583333333334" />
         <entry key="..\:/Users/bhavi/AndroidStudioProjects/HackVES/app/src/main/res/drawable/ic_text.xml" value="0.24114583333333334" />
@@ -13,6 +14,7 @@
         <entry key="..\:/Users/bhavi/AndroidStudioProjects/HackVES/app/src/main/res/layout/activity_main.xml" value="0.2" />
         <entry key="..\:/Users/bhavi/AndroidStudioProjects/HackVES/app/src/main/res/layout/activity_pick_video.xml" value="0.22083333333333333" />
         <entry key="..\:/Users/bhavi/AndroidStudioProjects/HackVES/app/src/main/res/layout/add_audio_dialog.xml" value="0.2" />
+        <entry key="..\:/Users/bhavi/AndroidStudioProjects/HackVES/app/src/main/res/layout/effect_dialog.xml" value="0.536" />
         <entry key="..\:/Users/bhavi/AndroidStudioProjects/HackVES/app/src/main/res/layout/export_video_dialog.xml" value="0.22083333333333333" />
       </map>
     </option>
