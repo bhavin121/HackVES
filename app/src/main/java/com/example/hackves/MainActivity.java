@@ -10,9 +10,11 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -33,15 +35,13 @@ import java.io.File;
 
 public class MainActivity extends AppCompatActivity {
 
-    public static final String TYPE_AUDIO = MediaStore.Audio.Media.DATA;
-    public static final String TYPE_VIDEO = MediaStore.Video.Media.DATA;
-    public static final int REQUEST_CODE = 100;
+    public static final String EXTRA_VIDEO_PATH = "path";
 
     ActivityMainBinding binding;
     ExportVideoDialogBinding exportVideoDialogBinding;
     FFmpeg fFmpeg;
     AlertDialog messageDialog, exportOptionsDialog;
-    ActivityResultLauncher<String> getVideoLauncher, getAudioLauncher;
+    ActivityResultLauncher<String> getAudioLauncher;
     String videoPath, audioPath;
 
     @Override
@@ -50,56 +50,26 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // Register activity result launcher for video
-        getVideoLauncher = registerForActivityResult(new ActivityResultContracts.GetContent() , new ActivityResultCallback<Uri>() {
-            @Override
-            public void onActivityResult(Uri result){
-                videoPath = getFilePath(result, TYPE_VIDEO);
-                binding.video.setVideoURI(result);
-                binding.video.setMediaController(new MediaController(MainActivity.this));
-                binding.video.start();
-            }
-        });
-
         // Register activity result launcher for audio
         getAudioLauncher = registerForActivityResult(new ActivityResultContracts.GetContent() , new ActivityResultCallback<Uri>() {
             @Override
             public void onActivityResult(Uri result){
-                audioPath = getFilePath(result, TYPE_AUDIO);
-                addAudio();
+//                audioPath = getFilePath(result, TYPE_AUDIO);
+//                addAudio();
             }
         });
 
-        binding.pickVideo.setOnClickListener(view -> pickVideo());
-        binding.pickAudio.setOnClickListener(view -> getAudioLauncher.launch("*/*"));
+        MediaController controller = new MediaController(this);
+        controller.setAnchorView(binding.video);
+        videoPath = getIntent().getStringExtra(EXTRA_VIDEO_PATH);
+        Uri uri = Uri.parse(videoPath);
+        binding.video.setVideoURI(uri);
+        binding.video.setMediaController(controller);
+        binding.video.start();
+//        binding.pickAudio.setOnClickListener(view -> getAudioLauncher.launch("*/*"));
 
         buildDialogs();
         initFFmpeg();
-    }
-
-    private void pickVideo(){
-        if(ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) ==PackageManager.PERMISSION_GRANTED){
-            getVideoLauncher.launch("*/*");
-        }
-        else{
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}
-                    , REQUEST_CODE);
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode , @NonNull String[] permissions , @NonNull int[] grantResults){
-        super.onRequestPermissionsResult(requestCode , permissions , grantResults);
-
-        if(requestCode == REQUEST_CODE &&
-                grantResults[0] == PackageManager.PERMISSION_GRANTED &&
-                grantResults[1] == PackageManager.PERMISSION_GRANTED
-        ){
-            getVideoLauncher.launch("video/*");
-        }else{
-            Toast.makeText(MainActivity.this , "Permission not granted" , Toast.LENGTH_SHORT).show();
-        }
     }
 
     private void buildDialogs( ){
@@ -120,22 +90,6 @@ public class MainActivity extends AppCompatActivity {
         messageDialog.setButton(AlertDialog.BUTTON_POSITIVE , "Ok" , (dialogInterface , i) -> {
             System.exit(0);
         });
-    }
-
-    public String getFilePath(Uri uri, String contentType){
-        String[] columns = {contentType};
-        String filePath;
-        Cursor c = getContentResolver().query(uri, columns, null, null, null);
-        if(c.moveToFirst()){
-            int index = c.getColumnIndex(columns[0]);
-            filePath = c.getString(index);
-        } else {
-            Toast.makeText(MainActivity.this , "File not found" , Toast.LENGTH_SHORT).show();
-            return "";
-        }
-        c.close();
-
-        return filePath;
     }
 
     private void initFFmpeg(){
