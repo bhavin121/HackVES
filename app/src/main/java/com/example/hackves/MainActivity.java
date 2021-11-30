@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         MediaController controller = new MediaController(this);
-        controller.setAnchorView(binding.video);
+        controller.setAnchorView(binding.videoAnchor);
         videoPath = getIntent().getStringExtra(EXTRA_VIDEO_PATH);
         Uri uri = Uri.parse(videoPath);
         binding.video.setVideoURI(uri);

@@ -7,35 +7,116 @@
     android:background="@color/white"
     tools:context=".MainActivity">
 
-
-    <VideoView
-        android:id="@+id/video"
+    <RelativeLayout
+        android:id="@+id/videoAnchor"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
-        android:keepScreenOn="true"
-        android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@+id/view"
+        app:layout_constraintBottom_toTopOf="@+id/linearLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
+        <VideoView
+            android:id="@+id/video"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:keepScreenOn="true"
+            />
+    </RelativeLayout>
 
-    <View
-        android:id="@+id/view"
+    <LinearLayout
+        android:id="@+id/linearLayout"
         android:layout_width="match_parent"
-        android:layout_height="10dp"
-        android:foregroundTint="@color/gray"
-        android:layout_marginVertical="10dp"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingVertical="10dp">
 
-    <TextView
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        android:text="Audio"
-        android:textSize="16sp"
-        android:paddingVertical="5dp"
-        android:gravity="center_horizontal"
-        android:textColor="@color/purple_200"
-        tools:ignore="HardcodedText"
-        app:drawableTopCompat="@drawable/ic_audio" />
+            <Space
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/audio"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:background="@drawable/rect"
+                android:gravity="center_horizontal"
+                android:paddingVertical="5dp"
+                android:text="Audio"
+                android:textColor="@color/purple_500"
+                android:textSize="14sp"
+                app:drawableTopCompat="@drawable/ic_audio"
+                tools:ignore="HardcodedText" />
+
+            <Space
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/text"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:background="@drawable/rect"
+                android:gravity="center_horizontal"
+                android:paddingVertical="5dp"
+                android:text="Text"
+                android:textColor="@color/purple_500"
+                android:textSize="14sp"
+                app:drawableTopCompat="@drawable/ic_text"
+                tools:ignore="HardcodedText" />
+
+            <Space
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/speed"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:background="@drawable/rect"
+                android:gravity="center_horizontal"
+                android:paddingVertical="5dp"
+                android:text="Speed"
+                android:textColor="@color/purple_500"
+                android:textSize="14sp"
+                app:drawableTopCompat="@drawable/ic_speed"
+                tools:ignore="HardcodedText" />
+
+            <Space
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/newF"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:background="@drawable/rect"
+                android:gravity="center_horizontal"
+                android:paddingVertical="5dp"
+                android:text="Audio"
+                android:textColor="@color/purple_500"
+                android:textSize="14sp"
+                app:drawableTopCompat="@drawable/ic_audio"
+                tools:ignore="HardcodedText" />
+
+            <Space
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+        </LinearLayout>
+
+    </LinearLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
