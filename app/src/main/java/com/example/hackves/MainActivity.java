@@ -23,6 +23,7 @@ import com.example.hackves.databinding.ActivityMainBinding;
 import com.github.hiteshsondhi88.libffmpeg.ExecuteBinaryResponseHandler;
 import com.github.hiteshsondhi88.libffmpeg.FFmpeg;
 import com.github.hiteshsondhi88.libffmpeg.FFmpegLoadBinaryResponseHandler;
+import com.github.hiteshsondhi88.libffmpeg.LoadBinaryResponseHandler;
 import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegCommandAlreadyRunningException;
 import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegNotSupportedException;
 
@@ -99,57 +100,7 @@ public class MainActivity extends AppCompatActivity {
         messageDialog = new AlertDialog.Builder(this)
                 .setTitle("Error")
                 .setPositiveButton("Ok", null)
-                .setNegativeButton("Cancel", null)
                 .create();
-    }
-
-    private void initFFmpeg(){
-        if(fFmpeg == null){
-            fFmpeg = FFmpeg.getInstance(this);
-            try {
-                fFmpeg.loadBinary(new FFmpegLoadBinaryResponseHandler() {
-                    @Override
-                    public void onFailure( ){
-                        showUnsupportedError();
-                    }
-
-                    @Override
-                    public void onSuccess( ){
-                        Toast.makeText(getApplicationContext() , "success" , Toast.LENGTH_SHORT).show();
-                    }
-
-                    @Override
-                    public void onStart( ){
-
-                    }
-
-                    @Override
-                    public void onFinish( ){
-
-                    }
-                });
-            } catch (FFmpegNotSupportedException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    private void executeFFmpegCommand(String []cmd){
-        try {
-            fFmpeg.execute(cmd, new ExecuteBinaryResponseHandler(){
-                @Override
-                public void onSuccess(String message){
-                    super.onSuccess(message);
-                }
-
-                @Override
-                public void onFailure(String message){
-                    super.onFailure(message);
-                }
-            });
-        } catch (FFmpegCommandAlreadyRunningException e) {
-            e.printStackTrace();
-        }
     }
 
     private void showUnsupportedError(){
@@ -175,4 +126,47 @@ public class MainActivity extends AppCompatActivity {
         return filePath;
     }
 
+    private void initFFmpeg(){
+        if(fFmpeg == null){
+            fFmpeg = FFmpeg.getInstance(this);
+            try {
+                fFmpeg.loadBinary(new LoadBinaryResponseHandler() {
+                    @Override
+                    public void onFailure( ){
+                        showUnsupportedError();
+                    }
+                });
+            } catch (FFmpegNotSupportedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void executeFFmpegCommand(String []cmd, CommandResultListener listener){
+        try {
+            fFmpeg.execute(cmd, new ExecuteBinaryResponseHandler(){
+                @Override
+                public void onSuccess(String message){
+                    super.onSuccess(message);
+                    if(listener!=null){
+                        listener.onSuccess(message);
+                    }
+                }
+
+                @Override
+                public void onFailure(String message){
+                    super.onFailure(message);
+                    if(listener!=null){
+                        listener.onFailure(message);
+                    }
+                }
+            });
+        } catch (FFmpegCommandAlreadyRunningException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void addAudio(){
+        //String[] command  = {"-i", yourVideoPath, "-i", yourAudioPath, "-c:v", "copy", "-c:a", "aac", "-map", "0:v:0", "-map", "1:a:0", "-shortest", file.getAbsolutePath()};
+    }
 }
