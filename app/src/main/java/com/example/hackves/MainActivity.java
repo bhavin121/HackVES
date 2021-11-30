@@ -23,6 +23,7 @@ import android.widget.MediaController;
 import android.widget.Toast;
 
 import com.example.hackves.databinding.ActivityMainBinding;
+import com.example.hackves.databinding.AddAudioDialogBinding;
 import com.example.hackves.databinding.ExportVideoDialogBinding;
 import com.github.hiteshsondhi88.libffmpeg.ExecuteBinaryResponseHandler;
 import com.github.hiteshsondhi88.libffmpeg.FFmpeg;
@@ -30,6 +31,7 @@ import com.github.hiteshsondhi88.libffmpeg.FFmpegLoadBinaryResponseHandler;
 import com.github.hiteshsondhi88.libffmpeg.LoadBinaryResponseHandler;
 import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegCommandAlreadyRunningException;
 import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegNotSupportedException;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 import java.io.File;
 
@@ -41,6 +43,8 @@ public class MainActivity extends AppCompatActivity {
     ExportVideoDialogBinding exportVideoDialogBinding;
     FFmpeg fFmpeg;
     AlertDialog messageDialog, exportOptionsDialog;
+    BottomSheetDialog addMusicDialog;
+    AddAudioDialogBinding addMusicBinding;
     ActivityResultLauncher<String> getAudioLauncher;
     String videoPath, audioPath;
 
@@ -54,8 +58,9 @@ public class MainActivity extends AppCompatActivity {
         getAudioLauncher = registerForActivityResult(new ActivityResultContracts.GetContent() , new ActivityResultCallback<Uri>() {
             @Override
             public void onActivityResult(Uri result){
-//                audioPath = getFilePath(result, TYPE_AUDIO);
-//                addAudio();
+                audioPath = Helper.getFilePath(MainActivity.this, result, Helper.TYPE_AUDIO);
+                String fileName = new File(audioPath).getName();
+                addMusicBinding.fileName.setText(fileName);
             }
         });
 
@@ -70,6 +75,8 @@ public class MainActivity extends AppCompatActivity {
 
         buildDialogs();
         initFFmpeg();
+
+        binding.audio.setOnClickListener(view -> addMusicDialog.show());
     }
 
     private void buildDialogs( ){
@@ -83,6 +90,16 @@ public class MainActivity extends AppCompatActivity {
                 .setTitle("Export")
                 .setView(exportVideoDialogBinding.getRoot())
                 .create();
+
+        addMusicDialog = new BottomSheetDialog(this);
+        addMusicBinding = AddAudioDialogBinding.inflate(getLayoutInflater());
+        addMusicDialog.setContentView(addMusicBinding.getRoot());
+        addMusicBinding.add.setOnClickListener(view -> {
+            addMusicDialog.dismiss();
+            addAudio();
+        });
+        addMusicBinding.cancel.setOnClickListener(view -> addMusicDialog.dismiss());
+        addMusicBinding.choose.setOnClickListener(view -> getAudioLauncher.launch("*/*"));
     }
 
     private void showUnsupportedError(){
