@@ -19,6 +19,7 @@ import com.example.hackves.databinding.AddAudioDialogBinding;
 import com.example.hackves.databinding.EffectDialogBinding;
 import com.example.hackves.databinding.ExportVideoDialogBinding;
 import com.example.hackves.databinding.SpeedDialogBinding;
+import com.example.hackves.databinding.TextDialogBinding;
 import com.github.hiteshsondhi88.libffmpeg.ExecuteBinaryResponseHandler;
 import com.github.hiteshsondhi88.libffmpeg.FFmpeg;
 import com.github.hiteshsondhi88.libffmpeg.LoadBinaryResponseHandler;
@@ -44,10 +45,11 @@ public class MainActivity extends AppCompatActivity {
     ExportVideoDialogBinding exportVideoDialogBinding;
     FFmpeg fFmpeg;
     AlertDialog messageDialog, exportOptionsDialog;
-    BottomSheetDialog addMusicDialog, addEffectDialog, speedDialog;
+    BottomSheetDialog addMusicDialog, addEffectDialog, speedDialog, addTextDialog;
     AddAudioDialogBinding addMusicBinding;
     EffectDialogBinding effectDialogBinding;
     SpeedDialogBinding speedDialogBinding;
+    TextDialogBinding textDialogBinding;
     ActivityResultLauncher<String> getAudioLauncher;
     String videoPath, audioPath;
     MediaPlayer videoPlayer;
@@ -82,14 +84,13 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-//        binding.pickAudio.setOnClickListener(view -> getAudioLauncher.launch("*/*"));
-
         buildDialogs();
         initFFmpeg();
 
         binding.audio.setOnClickListener(view -> addMusicDialog.show());
         binding.effect.setOnClickListener(view -> addEffectDialog.show());
         binding.speed.setOnClickListener(view -> speedDialog.show());
+        binding.text.setOnClickListener(view -> addTextDialog.show());
     }
 
     private void buildDialogs( ){
@@ -136,6 +137,14 @@ public class MainActivity extends AppCompatActivity {
         speedDialogBinding.s05x.setOnClickListener(view ->{
             applyEffect(SPEED_0_5X);
             speedDialog.dismiss();
+        });
+
+        addTextDialog = new BottomSheetDialog(this);
+        textDialogBinding = TextDialogBinding.inflate(getLayoutInflater());
+        addTextDialog.setContentView(textDialogBinding.getRoot());
+        textDialogBinding.apply.setOnClickListener(view -> {
+            applyEffect(ADD_FONT);
+            addTextDialog.dismiss();
         });
     }
 
@@ -226,7 +235,10 @@ public class MainActivity extends AppCompatActivity {
                 command = new String[]{"-y", "-i", videoPath, "-preset", "ultrafast", "-acodec", "copy", "-vf", "fade=t=in:st=0:d=0,fade=t=out:st=" + (binding.video.getDuration() - 5) + ":d=5", dest.getAbsolutePath()};
                 break;
             case ADD_FONT:
-
+                String text = textDialogBinding.text.getText().toString();
+                command = new String[]{"-i" ,videoPath, "-vf", "drawtext=",
+                        "text='"+text+"': fontcolor=white: fontsize=24: box=1: boxcolor=black@0.5:" +
+                "boxborderw=5: x=(w-text_w)/2: y=(h-text_h)/2"," -codec:a copy", dest.getAbsolutePath()};
                 break;
             case SPEED_0_5X:
                 command = new String[]{"-y", "-i", videoPath, "-preset", "ultrafast", "-filter_complex", "[0:v]setpts=2.0*PTS[v];[0:a]atempo=0.5[a]", "-map", "[v]", "-map", "[a]", "-b:v", "2097k", "-r", "60", "-vcodec", "mpeg4", dest.getAbsolutePath()};
