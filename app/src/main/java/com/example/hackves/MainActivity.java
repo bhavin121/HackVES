@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
     ActivityMainBinding binding;
     ExportVideoDialogBinding exportVideoDialogBinding;
     FFmpeg fFmpeg;
-    AlertDialog messageDialog, exportOptionsDialog;
+    AlertDialog messageDialog, exportOptionsDialog, loading;
     BottomSheetDialog addMusicDialog, addEffectDialog, speedDialog, addTextDialog;
     AddAudioDialogBinding addMusicBinding;
     EffectDialogBinding effectDialogBinding;
@@ -100,6 +100,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void buildDialogs( ){
+        loading = Helper.buildLoadingDialog(this);
         messageDialog = new AlertDialog.Builder(this)
                 .setTitle("Error")
                 .setPositiveButton("Ok", null)
@@ -214,10 +215,11 @@ public class MainActivity extends AppCompatActivity {
 
             File outputFile = new File(dir, exportVideoDialogBinding.fileName.getText()+""+exportVideoDialogBinding.fileFormat.getSelectedItem());
 
-
+            loading.show();
             executeFFmpegCommand(getCommands(effect, outputFile) , new CommandResultListener() {
                 @Override
                 public void onSuccess(String message){
+                    loading.dismiss();
                     binding.video.setVideoURI(Uri.fromFile(outputFile));
                     binding.video.start();
                     Toast.makeText(getApplicationContext() , "Success" , Toast.LENGTH_SHORT).show();
@@ -225,6 +227,7 @@ public class MainActivity extends AppCompatActivity {
 
                 @Override
                 public void onFailure(String message){
+                    loading.dismiss();
                     System.out.println(message);
                     Toast.makeText(getApplicationContext() , "Failure" , Toast.LENGTH_SHORT).show();
                 }

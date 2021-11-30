@@ -4,7 +4,12 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.view.LayoutInflater;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AlertDialog;
+
+import com.example.hackves.databinding.LoadingBinding;
 
 public class Helper {
 
@@ -31,7 +36,11 @@ public class Helper {
         return filePath;
     }
 
-    public static void buildLoadingDialog(Context context){
-
+    public static AlertDialog buildLoadingDialog(Context context){
+        LoadingBinding binding = LoadingBinding.inflate(LayoutInflater.from(context));
+        return new AlertDialog.Builder(context)
+                .setView(binding.getRoot())
+                .setCancelable(false)
+                .create();
     }
 }
