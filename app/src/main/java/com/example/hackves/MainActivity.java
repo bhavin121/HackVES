@@ -7,10 +7,12 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.DialogInterface;
+import android.content.res.AssetManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Log;
 import android.widget.MediaController;
 import android.widget.Toast;
 
@@ -28,7 +30,10 @@ import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegNotSupportedExceptio
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -40,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
     public static final int ADD_FONT = 3;
     public static final int SPEED_2X = 4;
     public static final int SPEED_0_5X = 5;
+    public static final int REVERSE = 6;
 
     ActivityMainBinding binding;
     ExportVideoDialogBinding exportVideoDialogBinding;
@@ -124,6 +130,10 @@ public class MainActivity extends AppCompatActivity {
         });
         effectDialogBinding.fadeOut.setOnClickListener(view ->{
             applyEffect(FADE_OUT);
+            addEffectDialog.dismiss();
+        });
+        effectDialogBinding.reverse.setOnClickListener(view -> {
+            applyEffect(REVERSE);
             addEffectDialog.dismiss();
         });
 
@@ -215,6 +225,7 @@ public class MainActivity extends AppCompatActivity {
 
                 @Override
                 public void onFailure(String message){
+                    System.out.println(message);
                     Toast.makeText(getApplicationContext() , "Failure" , Toast.LENGTH_SHORT).show();
                 }
             });
@@ -236,9 +247,12 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case ADD_FONT:
                 String text = textDialogBinding.text.getText().toString();
-                command = new String[]{"-i" ,videoPath, "-vf", "drawtext=",
-                        "text='"+text+"': fontcolor=white: fontsize=24: box=1: boxcolor=black@0.5:" +
-                "boxborderw=5: x=(w-text_w)/2: y=(h-text_h)/2"," -codec:a copy", dest.getAbsolutePath()};
+                String font = Environment.getExternalStorageDirectory().getAbsolutePath()+"/font.ttf";
+                if(!new File(font).exists()){
+                    copyFonts();
+                }
+                command = new String[]{"-i" ,videoPath, "-preset", "ultrafast", "-vf", "drawtext=fontfile="+font+":"+
+                        "text='"+text+"': fontcolor="+textDialogBinding.color.getSelectedItem()+": fontsize=100: x=(w-text_w)/2: y=(h-text_h)/2","-codec:a" ,"copy", dest.getAbsolutePath()};
                 break;
             case SPEED_0_5X:
                 command = new String[]{"-y", "-i", videoPath, "-preset", "ultrafast", "-filter_complex", "[0:v]setpts=2.0*PTS[v];[0:a]atempo=0.5[a]", "-map", "[v]", "-map", "[a]", "-b:v", "2097k", "-r", "60", "-vcodec", "mpeg4", dest.getAbsolutePath()};
@@ -246,7 +260,48 @@ public class MainActivity extends AppCompatActivity {
             case SPEED_2X:
                 command = new String[]{"-y", "-i", videoPath, "-preset", "ultrafast", "-filter_complex", "[0:v]setpts=0.5*PTS[v];[0:a]atempo=2.0[a]", "-map", "[v]", "-map", "[a]", "-b:v", "2097k", "-r", "60", "-vcodec", "mpeg4", dest.getAbsolutePath()};
                 break;
+            case REVERSE:
+                command = new String[]{"-i", videoPath, "-preset", "ultrafast", "-vf", "reverse", "-af", "areverse", dest.getAbsolutePath()};
+                break;
         }
         return command;
+    }
+
+    private void copyFonts() {
+        AssetManager assetManager = getAssets();
+        String[] fontFiles = null;
+        try {
+            fontFiles = assetManager.list("");
+        } catch (IOException e) {
+            Log.e("tag", "Failed to get asset file list.", e);
+        }
+        if(fontFiles != null) {
+            for(String filename : fontFiles) {
+                InputStream in;
+                OutputStream out;
+                try {
+                    in = assetManager.open(filename);
+
+                    String outDir = Environment.getExternalStorageDirectory().getAbsolutePath();
+
+                    File outFile = new File(outDir, filename);
+
+                    out = new FileOutputStream(outFile);
+                    copyFile(in, out);
+                    in.close();
+                    out.flush();
+                    out.close();
+                } catch(IOException e) {
+                    Log.e("tag", "Failed to copy asset file: " + filename, e);
+                }
+            }
+        }
+    }
+    private void copyFile(InputStream in, OutputStream out) throws IOException {
+        byte[] buffer = new byte[1024];
+        int read;
+        while((read = in.read(buffer)) != -1){
+            out.write(buffer, 0, read);
+        }
     }
 }

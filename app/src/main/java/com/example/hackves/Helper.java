@@ -30,4 +30,8 @@ public class Helper {
 
         return filePath;
     }
+
+    public static void buildLoadingDialog(Context context){
+
+    }
 }

@@ -45,13 +45,29 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="30dp"
-        android:layout_marginBottom="40dp"
         android:paddingVertical="10dp"
         android:text="Fade Out"
-        app:backgroundTint="@color/purple_200"
-        android:textColor="@color/purple_700"
+        app:backgroundTint="@color/lightBlue"
+        android:textColor="@color/purple_500"
         android:textSize="30sp"
         app:cornerRadius="30dp"
         android:textAllCaps="false"
         tools:ignore="HardcodedText" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/reverse"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="30dp"
+        android:layout_marginBottom="40dp"
+        android:layout_marginTop="10dp"
+        android:paddingVertical="10dp"
+        android:text="Reverse"
+        android:textSize="30sp"
+        android:textAllCaps="false"
+        app:backgroundTint="@color/lightBlue"
+        android:textColor="@color/purple_500"
+        app:cornerRadius="30dp"
+        tools:ignore="HardcodedText" />
+
 </androidx.appcompat.widget.LinearLayoutCompat>

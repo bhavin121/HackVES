@@ -4,6 +4,15 @@
         <item>.mov</item>
     </string-array>
 
+    <string-array name="Colors">
+        <item>black</item>
+        <item>blue</item>
+        <item>green</item>
+        <item>white</item>
+        <item>red</item>
+        <item>yellow</item>
+    </string-array>
+
     <string name="app_name">HackVES</string>
     <string name="file_name">File Name</string>
     <string name="add_music">Add Music</string>
