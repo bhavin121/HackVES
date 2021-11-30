@@ -15,11 +15,13 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.widget.MediaController;
 import android.widget.Toast;
 
 import com.example.hackves.databinding.ActivityMainBinding;
+import com.example.hackves.databinding.ExportVideoDialogBinding;
 import com.github.hiteshsondhi88.libffmpeg.ExecuteBinaryResponseHandler;
 import com.github.hiteshsondhi88.libffmpeg.FFmpeg;
 import com.github.hiteshsondhi88.libffmpeg.FFmpegLoadBinaryResponseHandler;
@@ -36,9 +38,11 @@ public class MainActivity extends AppCompatActivity {
     public static final int REQUEST_CODE = 100;
 
     ActivityMainBinding binding;
+    ExportVideoDialogBinding exportVideoDialogBinding;
     FFmpeg fFmpeg;
-    AlertDialog messageDialog;
+    AlertDialog messageDialog, exportOptionsDialog;
     ActivityResultLauncher<String> getVideoLauncher, getAudioLauncher;
+    String videoPath, audioPath;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -50,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
         getVideoLauncher = registerForActivityResult(new ActivityResultContracts.GetContent() , new ActivityResultCallback<Uri>() {
             @Override
             public void onActivityResult(Uri result){
-                System.out.println(getFilePath(result, TYPE_VIDEO));
+                videoPath = getFilePath(result, TYPE_VIDEO);
                 binding.video.setVideoURI(result);
                 binding.video.setMediaController(new MediaController(MainActivity.this));
                 binding.video.start();
@@ -61,13 +65,15 @@ public class MainActivity extends AppCompatActivity {
         getAudioLauncher = registerForActivityResult(new ActivityResultContracts.GetContent() , new ActivityResultCallback<Uri>() {
             @Override
             public void onActivityResult(Uri result){
-
+                audioPath = getFilePath(result, TYPE_AUDIO);
+                addAudio();
             }
         });
 
         binding.pickVideo.setOnClickListener(view -> pickVideo());
+        binding.pickAudio.setOnClickListener(view -> getAudioLauncher.launch("*/*"));
 
-        buildMessageDialog();
+        buildDialogs();
         initFFmpeg();
     }
 
@@ -96,10 +102,16 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void buildMessageDialog( ){
+    private void buildDialogs( ){
         messageDialog = new AlertDialog.Builder(this)
                 .setTitle("Error")
                 .setPositiveButton("Ok", null)
+                .create();
+
+        exportVideoDialogBinding = ExportVideoDialogBinding.inflate(getLayoutInflater());
+        exportOptionsDialog = new AlertDialog.Builder(this)
+                .setTitle("Export")
+                .setView(exportVideoDialogBinding.getRoot())
                 .create();
     }
 
@@ -167,6 +179,29 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void addAudio(){
-        //String[] command  = {"-i", yourVideoPath, "-i", yourAudioPath, "-c:v", "copy", "-c:a", "aac", "-map", "0:v:0", "-map", "1:a:0", "-shortest", file.getAbsolutePath()};
+        exportOptionsDialog.setButton(DialogInterface.BUTTON_POSITIVE , "Save" , (dialogInterface , i) -> {
+            File dir = new File(Environment.getExternalStorageDirectory(),"HackVES");
+            if(!dir.exists()){
+                dir.mkdir();
+            }
+
+            File outputFile = new File(dir, exportVideoDialogBinding.fileName.getText()+""+exportVideoDialogBinding.fileFormat.getSelectedItem());
+
+            String[] command  = {"-i", videoPath, "-i", audioPath, "-c:v", "copy", "-c:a", "aac", "-map", "0:v:0", "-map", "1:a:0", "-shortest", outputFile.getAbsolutePath()};
+            executeFFmpegCommand(command , new CommandResultListener() {
+                @Override
+                public void onSuccess(String message){
+                    binding.video.setVideoURI(Uri.fromFile(outputFile));
+                    binding.video.start();
+                    Toast.makeText(getApplicationContext() , "Success" , Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onFailure(String message){
+                    Toast.makeText(getApplicationContext() , "Failure" , Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
+        exportOptionsDialog.show();
     }
 }

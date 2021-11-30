@@ -1,3 +1,9 @@
 <resources>
+    <string-array name="Formats">
+        <item>.mp4</item>
+        <item>.mov</item>
+    </string-array>
+
     <string name="app_name">HackVES</string>
+    <string name="file_name">File Name</string>
 </resources>
