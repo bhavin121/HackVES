@@ -16,7 +16,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Choose Effect"
+        android:text="Choose Speed"
         android:textStyle="bold"
         android:textSize="22sp"
         android:textColor="@color/purple_700"
@@ -25,14 +25,14 @@
         tools:ignore="HardcodedText" />
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/fadeIn"
+        android:id="@+id/s2x"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="30dp"
         android:layout_marginBottom="10dp"
         android:layout_marginTop="20dp"
         android:paddingVertical="10dp"
-        android:text="Fade In"
+        android:text="2.0x"
         android:textSize="30sp"
         android:textAllCaps="false"
         app:backgroundTint="@color/lightBlue"
@@ -41,13 +41,13 @@
         tools:ignore="HardcodedText" />
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/fadeOut"
+        android:id="@+id/s0.5x"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="30dp"
         android:layout_marginBottom="40dp"
         android:paddingVertical="10dp"
-        android:text="Fade Out"
+        android:text="0.5x"
         app:backgroundTint="@color/purple_200"
         android:textColor="@color/purple_700"
         android:textSize="30sp"

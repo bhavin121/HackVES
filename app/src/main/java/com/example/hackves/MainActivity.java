@@ -18,6 +18,7 @@ import com.example.hackves.databinding.ActivityMainBinding;
 import com.example.hackves.databinding.AddAudioDialogBinding;
 import com.example.hackves.databinding.EffectDialogBinding;
 import com.example.hackves.databinding.ExportVideoDialogBinding;
+import com.example.hackves.databinding.SpeedDialogBinding;
 import com.github.hiteshsondhi88.libffmpeg.ExecuteBinaryResponseHandler;
 import com.github.hiteshsondhi88.libffmpeg.FFmpeg;
 import com.github.hiteshsondhi88.libffmpeg.LoadBinaryResponseHandler;
@@ -35,14 +36,18 @@ public class MainActivity extends AppCompatActivity {
     public static final int ADD_AUDIO = 0;
     public static final int FADE_IN = 1;
     public static final int FADE_OUT = 2;
+    public static final int ADD_FONT = 3;
+    public static final int SPEED_2X = 4;
+    public static final int SPEED_0_5X = 5;
 
     ActivityMainBinding binding;
     ExportVideoDialogBinding exportVideoDialogBinding;
     FFmpeg fFmpeg;
     AlertDialog messageDialog, exportOptionsDialog;
-    BottomSheetDialog addMusicDialog, addEffectDialog;
+    BottomSheetDialog addMusicDialog, addEffectDialog, speedDialog;
     AddAudioDialogBinding addMusicBinding;
     EffectDialogBinding effectDialogBinding;
+    SpeedDialogBinding speedDialogBinding;
     ActivityResultLauncher<String> getAudioLauncher;
     String videoPath, audioPath;
     MediaPlayer videoPlayer;
@@ -84,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
 
         binding.audio.setOnClickListener(view -> addMusicDialog.show());
         binding.effect.setOnClickListener(view -> addEffectDialog.show());
+        binding.speed.setOnClickListener(view -> speedDialog.show());
     }
 
     private void buildDialogs( ){
@@ -118,6 +124,18 @@ public class MainActivity extends AppCompatActivity {
         effectDialogBinding.fadeOut.setOnClickListener(view ->{
             applyEffect(FADE_OUT);
             addEffectDialog.dismiss();
+        });
+
+        speedDialogBinding = SpeedDialogBinding.inflate(getLayoutInflater());
+        speedDialog = new BottomSheetDialog(this);
+        speedDialog.setContentView(speedDialogBinding.getRoot());
+        speedDialogBinding.s2x.setOnClickListener(view -> {
+            applyEffect(SPEED_2X);
+            speedDialog.dismiss();
+        });
+        speedDialogBinding.s05x.setOnClickListener(view ->{
+            applyEffect(SPEED_0_5X);
+            speedDialog.dismiss();
         });
     }
 
@@ -199,13 +217,22 @@ public class MainActivity extends AppCompatActivity {
         String[] command = null;
         switch (effect){
             case ADD_AUDIO:
-                command  = new String[]{"-i", videoPath, "-i", audioPath, "-c:v", "copy", "-c:a", "aac", "-map", "0:v:0", "-map", "1:a:0", "-shortest", dest.getAbsolutePath()};
+                command  = new String[]{"-i", videoPath, "-i", audioPath, "-preset", "ultrafast", "-c:v", "copy", "-c:a", "aac", "-map", "0:v:0", "-map", "1:a:0", "-shortest", dest.getAbsolutePath()};
                 break;
             case FADE_IN:
-                command = new String[]{"-y", "-i", videoPath, "-acodec", "copy", "-vf", "fade=t=in:st=0:d=5", dest.getAbsolutePath()};
+                command = new String[]{"-y", "-i", videoPath, "-preset", "ultrafast",  "-acodec", "copy", "-vf", "fade=t=in:st=0:d=5,fade=t=out:st=" + ( binding.video.getDuration()) + ":d=0", dest.getAbsolutePath()};
                 break;
             case FADE_OUT:
-                command = new String[]{"-y", "-i", videoPath, "-acodec", "copy", "-vf", "fade=t=out:st=" + String.valueOf(binding.video.getDuration() - 5) + ":d=5", dest.getAbsolutePath()};
+                command = new String[]{"-y", "-i", videoPath, "-preset", "ultrafast", "-acodec", "copy", "-vf", "fade=t=in:st=0:d=0,fade=t=out:st=" + (binding.video.getDuration() - 5) + ":d=5", dest.getAbsolutePath()};
+                break;
+            case ADD_FONT:
+
+                break;
+            case SPEED_0_5X:
+                command = new String[]{"-y", "-i", videoPath, "-preset", "ultrafast", "-filter_complex", "[0:v]setpts=2.0*PTS[v];[0:a]atempo=0.5[a]", "-map", "[v]", "-map", "[a]", "-b:v", "2097k", "-r", "60", "-vcodec", "mpeg4", dest.getAbsolutePath()};
+                break;
+            case SPEED_2X:
+                command = new String[]{"-y", "-i", videoPath, "-preset", "ultrafast", "-filter_complex", "[0:v]setpts=0.5*PTS[v];[0:a]atempo=2.0[a]", "-map", "[v]", "-map", "[a]", "-b:v", "2097k", "-r", "60", "-vcodec", "mpeg4", dest.getAbsolutePath()};
                 break;
         }
         return command;
